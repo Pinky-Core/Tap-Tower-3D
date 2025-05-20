@@ -14,7 +14,7 @@ public class HookControl : MonoBehaviour
     // Gancho donde se instancia el bloque
     [SerializeField] private Rigidbody hook;
 
-    // Tiempo entre generación de bloques
+    // Tiempo entre generaciï¿½n de bloques
     [SerializeField] private float countDownIntancer = 1;
 
     // Prefabs de los edificios/bloques que se van a generar
@@ -23,16 +23,16 @@ public class HookControl : MonoBehaviour
     // Offset desde el nuevo punto de pivote
     [SerializeField] private Vector3 pivotOffset = 5 * Vector3.up;
 
-    // Duración de la transición al mover el gancho
+    // Duraciï¿½n de la transiciï¿½n al mover el gancho
     [SerializeField] private float rePositionDuration = 1;
 
     // Referencia al bloque actual instanciado
     private Rigidbody buildingBody;
 
-    // Línea que conecta el pivot y el gancho
+    // Lï¿½nea que conecta el pivot y el gancho
     private LineRenderer line;
 
-    // Tiempo en el que se generó el último bloque
+    // Tiempo en el que se generï¿½ el ï¿½ltimo bloque
     private float lastInstance = 0;
 
     private void Awake()
@@ -47,11 +47,11 @@ public class HookControl : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Ajustamos el grosor de la línea
+        // Ajustamos el grosor de la lï¿½nea
         line.startWidth = lineWidth;
         line.endWidth = lineWidth;
 
-        // Dibujamos la línea entre el pivote y el gancho
+        // Dibujamos la lï¿½nea entre el pivote y el gancho
         line.SetPosition(0, pivot.position);
         line.SetPosition(1, hook.position);
 
@@ -62,20 +62,23 @@ public class HookControl : MonoBehaviour
     // Suelta el bloque actual (lo deja caer)
     public void DetachBuilding()
     {
+
         if (buildingBody != null)
         {
-            buildingBody.isKinematic = false; // Activamos física
-            buildingBody.constraints = RigidbodyConstraints.None; // Le quitamos restricciones
-            buildingBody.transform.SetParent(null); // Lo separamos del gancho
-            buildingBody = null; // Limpiamos la referencia
-            lastInstance = Time.time; // Guardamos el tiempo para el cooldown
+            buildingBody.isKinematic = false;
+            buildingBody.constraints = RigidbodyConstraints.None;
+            buildingBody.transform.SetParent(null);
+            lastInstance = Time.time;
+
+            buildingBody = null;
         }
     }
+
 
     // Instancia un nuevo bloque en el gancho si no hay uno ya colgado
     private void InstanceBuilding()
     {
-        // Generador de números aleatorios con semilla basada en el tiempo
+        // Generador de nï¿½meros aleatorios con semilla basada en el tiempo
         Random.InitState((int)Time.time);
 
         // Si no hay bloque actual y ha pasado el cooldown...
@@ -83,12 +86,12 @@ public class HookControl : MonoBehaviour
         {
             // Instanciamos un nuevo bloque como hijo del gancho
             buildingBody = Instantiate<Rigidbody>(buildings[Random.Range(0, buildings.Length)], hook.transform, true);
-            buildingBody.isKinematic = true; // Sin física mientras cuelga
+            buildingBody.isKinematic = true; // Sin fï¿½sica mientras cuelga
             buildingBody.transform.localPosition = Vector3.down; // Posicionado justo debajo del gancho
         }
     }
 
-    // Actualiza la posición del gancho (por ejemplo cuando sube la torre)
+    // Actualiza la posiciï¿½n del gancho (por ejemplo cuando sube la torre)
     public void UpdatePivotPosition(Vector3 pos)
     {
         pos.x = 0;
@@ -98,7 +101,7 @@ public class HookControl : MonoBehaviour
         UpdatePositionTask(rePositionDuration, pos + pivotOffset);
     }
 
-    // Corrutina async para interpolar la posición del gancho con suavidad
+    // Corrutina async para interpolar la posiciï¿½n del gancho con suavidad
     private async void UpdatePositionTask(float duration, Vector3 endValue)
     {
         float time = 0;
@@ -109,6 +112,13 @@ public class HookControl : MonoBehaviour
             time += Time.deltaTime;
             await Task.Yield(); // Esperamos un frame
         }
-        transform.position = endValue; // Posición final asegurada
+        transform.position = endValue; // Posiciï¿½n final asegurada
     }
+    
+    private bool IsPlacementCorrect(Vector3 position)
+    {
+        // Ejemplo simple: si cae cerca del centro, se considera correcto
+        return Mathf.Abs(position.x) < 1f;
+    }
+
 }

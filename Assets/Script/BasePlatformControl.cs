@@ -3,10 +3,13 @@ using UnityEngine.Events;
 
 public class BasePlatformControl : MonoBehaviour
 {
-    // Referencia al BoxCollider del objeto que actúa como plataforma
+
+    [SerializeField] private Tutorial tutorial;
+
+    // Referencia al BoxCollider del objeto que actï¿½a como plataforma
     private BoxCollider boxCollider;
 
-    // Evento que se dispara cuando un bloque llega a la plataforma, pasando su posición
+    // Evento que se dispara cuando un bloque llega a la plataforma, pasando su posiciï¿½n
     public UnityEvent<Vector3> onBuildingReachPlatform;
 
     private void Awake()
@@ -20,23 +23,23 @@ public class BasePlatformControl : MonoBehaviour
         // Si el punto de contacto no viene desde arriba (comparando con el eje Y de la plataforma), ignorar
         if (Vector3.Dot(collision.contacts[0].point, transform.up) <= 0) return;
 
-        // Si el objeto que colisionó tiene un ParticleSystem, emitir 50 partículas
+        // Si el objeto que colisionï¿½ tiene un ParticleSystem, emitir 50 partï¿½culas
         if (collision.gameObject.TryGetComponent<ParticleSystem>(out ParticleSystem ps))
             ps.Emit(50);
 
-        // Si el objeto que colisionó tiene un Rigidbody...
+        // Si el objeto que colisionï¿½ tiene un Rigidbody...
         if (collision.gameObject.TryGetComponent<Rigidbody>(out Rigidbody rigidbody))
         {
             // Detener su movimiento
             rigidbody.isKinematic = true;
 
-            // Convertir el bloque en hijo de la plataforma (se mantiene su posición global)
+            // Convertir el bloque en hijo de la plataforma (se mantiene su posiciï¿½n global)
             rigidbody.transform.SetParent(transform, true);
 
-            // Alinear su rotación con la plataforma
+            // Alinear su rotaciï¿½n con la plataforma
             rigidbody.transform.localRotation = Quaternion.Euler(Vector3.zero);
 
-            // Calcular la nueva posición para mover el centro del BoxCollider
+            // Calcular la nueva posiciï¿½n para mover el centro del BoxCollider
             Vector3 newPosition = rigidbody.transform.localPosition;
             newPosition.y += rigidbody.transform.localScale.y / 2;
 
@@ -46,8 +49,25 @@ public class BasePlatformControl : MonoBehaviour
             // Desmarcar el bloque para que no sea detectado por otros scripts que usen tags
             rigidbody.gameObject.tag = "Untagged";
 
-            // Invocar el evento pasando la posición del último hijo (último bloque colocado)
+            // Invocar el evento pasando la posiciï¿½n del ï¿½ltimo hijo (ï¿½ltimo bloque colocado)
             onBuildingReachPlatform?.Invoke(transform.GetChild(transform.childCount - 1).position);
+
+
+            // AquÃ­ deberÃ­as determinar si el bloque estÃ¡ bien colocado o no
+            bool correcto = CheckAlignment(rigidbody.transform.localPosition);
+            // Avisar al tutorial que se soltÃ³ el bloque
+            tutorial.OnBlockDropped(correcto);
         }
+
+        if (collision.gameObject.TryGetComponent<BlockState>(out BlockState state))
+        {
+            state.yaFueColocado = true;
+        }
+    }
+
+    // Ejemplo sencillo de CheckAlignment
+    private bool CheckAlignment(Vector3 localPos)
+    {
+        return Mathf.Abs(localPos.x) <= 0.2f;
     }
 }
